@@ -37,6 +37,24 @@ class Entries:
         self.parent_window.add_button('plot', 'Plot', 'plot', hot_key='<Return>')
         self.entries_list.append(new_entry)
 
+    def del_entry(self):
+        if len(self.entries_list) == 0:
+            mw = ModalWindow(self.parent_window, title='Нет полей ввода', labeltext='Нет полей ввода для удаления')
+            ok_button = Button(master=mw.top, text='OK', command=mw.cancel)
+            mw.add_button(ok_button)
+        else:
+            get_func_str = self.entries_list[-1].get()
+            if len(get_func_str) != 0:
+                mw_del_not_empty = ModalWindow(self.parent_window, title='Удаление непустого поля', labeltext='Вы пытаетесь удалить '
+                                                                                                             'поле, которое содержит '
+                                                                                                             'какую-то функцию')
+                ok_button = Button(master=mw_del_not_empty.top, text='OK', command=mw_del_not_empty.cancel)
+                mw_del_not_empty.add_button(ok_button)
+            else:
+                self.entries_list[-1].pack_forget()
+                last_entry = self.entries_list[-1]
+                self.entries_list.pop()
+
 
 # class for plotting (класс для построения графиков)
 class Plotter:
@@ -153,6 +171,12 @@ class Commands:
         self.__forget_navigation()
         self.parent_window.entries.add_entry()
 
+    def del_func(self, *args, **kwargs):
+        self.__forget_canvas()
+        self.__forget_navigation()
+        self.parent_window.entries.del_entry()
+
+
     def save_as(self):
         self._state.save_state()
         return self
@@ -248,10 +272,12 @@ if __name__ == "__main__":
     commands_main.add_command('plot', commands_main.plot)
     commands_main.add_command('add_func', commands_main.add_func)
     commands_main.add_command('save_as', commands_main.save_as)
+    commands_main.add_command('del_func', commands_main.del_func)
     # init app (создаем экземпляр приложения)
     app = App(buttons_main, plotter_main, commands_main, entries_main)
     # init add func button (добавляем кнопку добавления новой функции)
     app.add_button('add_func', 'Добавить функцию', 'add_func', hot_key='<Control-a>')
+    app.add_button('del_func', 'Удалить последнюю функцию', 'del_func', hot_key='<Control-d>')
     # init first entry (создаем первое поле ввода)
     entries_main.add_entry()
     app.create_menu()
