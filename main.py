@@ -55,6 +55,10 @@ class Entries:
                         self.__forget_entry__()
                 else:
                     self.__forget_entry__()
+        plot_button = self.parent_window.get_button_by_name('plot')
+        if plot_button:
+            plot_button.pack_forget()
+        self.parent_window.add_button('plot', 'Plot', 'plot', hot_key='<Return>')
 
     def __forget_entry__(self):
         Entries.curr_entry.pack_forget()
