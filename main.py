@@ -1,3 +1,4 @@
+from fileinput import filename
 import json
 import matplotlib
 
@@ -6,7 +7,8 @@ import numpy as np
 
 from functools import partial
 from tkinter import *
-from tkinter.filedialog import asksaveasfile
+from tkinter.filedialog import asksaveasfile, askopenfilename
+import tkinter.messagebox as mb
 
 from matplotlib import pyplot as plt
 
@@ -30,6 +32,7 @@ class Entries:
         new_entry = Entry(self.parent_window)
         new_entry.icursor(0)
         new_entry.focus()
+        new_entry.bind('<FocusIn>', Entries.on_focus)
         new_entry.pack()
         plot_button = self.parent_window.get_button_by_name('plot')
         if plot_button:
@@ -43,17 +46,33 @@ class Entries:
             ok_button = Button(master=mw.top, text='OK', command=mw.cancel)
             mw.add_button(ok_button)
         else:
-            get_func_str = self.entries_list[-1].get()
-            if len(get_func_str) != 0:
-                mw_del_not_empty = ModalWindow(self.parent_window, title='Удаление непустого поля', labeltext='Вы пытаетесь удалить '
-                                                                                                             'поле, которое содержит '
-                                                                                                             'какую-то функцию')
-                ok_button = Button(master=mw_del_not_empty.top, text='OK', command=mw_del_not_empty.cancel)
-                mw_del_not_empty.add_button(ok_button)
-            else:
-                self.entries_list[-1].pack_forget()
-                last_entry = self.entries_list[-1]
-                self.entries_list.pop()
+            if Entries.curr_entry != None:
+                get_func_str = Entries.curr_entry.get()
+                answer = None
+                if len(get_func_str) != 0:
+                    answer = mb.askokcancel("Подтверждение удаления", "Вы пытаетесь удалить поле, содержащее информацию")
+                    # mw_del_not_empty = ModalWindow(self.parent_window, title='Удаление непустого поля', labeltext='Вы пытаетесь '
+                    #                                                                                             'удалить поле, '
+                    #                                                                                             'которое содержит '
+                    #                                                                                             'какую-то функцию')
+                    # ok_button = Button(master=mw_del_not_empty.top, text='OK', command=mw_del_not_empty.cancel)
+                    # mw_del_not_empty.add_button(ok_button)
+                    if answer:
+                        self.__forget_entry__()
+                else:
+                    self.__forget_entry__()
+
+    def __forget_entry__(self):
+        Entries.curr_entry.pack_forget()
+        self.entries_list.remove(Entries.curr_entry)
+        Entries.curr_entry = None
+
+
+    @staticmethod
+    def on_focus(entry):
+        Entries.curr_entry = entry.widget
+
+    curr_entry = None
 
 
 # class for plotting (класс для построения графиков)
@@ -181,6 +200,21 @@ class Commands:
         self._state.save_state()
         return self
 
+    def open_file(self):
+        open_filename = askopenfilename(title="Выбор файла", filetypes=[("Json", '*.json'), ("All files", "*.*")])
+        if open_filename != '':
+            func_dict = json.load(open(open_filename, "r"))
+            list_of_function = func_dict["list_of_function"]
+            figure = self.parent_window.plotter.plot(list_of_function) ## вот тут нужно сделать окно выбора файла и вытащить файлик со списком функций
+            self._state.figure = figure
+            self.__forget_canvas()
+            self.__figure_canvas = FigureCanvasTkAgg(figure, self.parent_window)
+            self.__forget_navigation()
+            self.__navigation_toolbar = NavigationToolbar2Tk(self.__figure_canvas, self.parent_window)
+            self.__figure_canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
+            plot_button = self.parent_window.get_button_by_name('plot')
+            if plot_button:
+                plot_button.pack_forget()
 
 # class for buttons storage (класс для хранения кнопок)
 class Buttons:
@@ -255,6 +289,7 @@ class App(Tk):
 
         file_menu = Menu(menu)
         file_menu.add_command(label="Save as...", command=self.commands.get_command_by_name('save_as'))
+        file_menu.add_command(label="Open...", command=self.commands.get_command_by_name('open_file'))
         menu.add_cascade(label="File", menu=file_menu)
 
 
@@ -272,12 +307,13 @@ if __name__ == "__main__":
     commands_main.add_command('plot', commands_main.plot)
     commands_main.add_command('add_func', commands_main.add_func)
     commands_main.add_command('save_as', commands_main.save_as)
+    commands_main.add_command('open_file', commands_main.open_file)
     commands_main.add_command('del_func', commands_main.del_func)
     # init app (создаем экземпляр приложения)
     app = App(buttons_main, plotter_main, commands_main, entries_main)
     # init add func button (добавляем кнопку добавления новой функции)
     app.add_button('add_func', 'Добавить функцию', 'add_func', hot_key='<Control-a>')
-    app.add_button('del_func', 'Удалить последнюю функцию', 'del_func', hot_key='<Control-d>')
+    app.add_button('del_func', 'Удалить функцию', 'del_func', hot_key='<Control-d>')
     # init first entry (создаем первое поле ввода)
     entries_main.add_entry()
     app.create_menu()
