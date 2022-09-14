@@ -155,22 +155,26 @@ class Commands:
 
         self._state.reset_state()
         list_of_function = []
-        for entry in self.parent_window.entries.entries_list:
-            get_func_str = entry.get()
-            self._state.list_of_function.append(get_func_str)
-            if is_not_blank(get_func_str):
-                list_of_function.append(get_func_str)
-            else:
-                if self.__empty_entry_counter == 0:
-                    mw = ModalWindow(self.parent_window, title='Пустая строка', labeltext='Это пример модального окна, '
-                                                                                          'возникающий, если ты ввел '
-                                                                                          'пустую '
-                                                                                          'строку. С этим ничего '
-                                                                                          'делать не нужно. '
-                                                                                          'Просто нажми OK :)')
-                    ok_button = Button(master=mw.top, text='OK', command=mw.cancel)
-                    mw.add_button(ok_button)
-                    self.__empty_entry_counter = 1
+        list_of_function_from_file = kwargs.get('list_of_function')
+        if list_of_function_from_file:
+            list_of_function = list_of_function_from_file
+        if not list_of_function_from_file:
+            for entry in self.parent_window.entries.entries_list:
+                get_func_str = entry.get()
+                self._state.list_of_function.append(get_func_str)
+                if is_not_blank(get_func_str):
+                    list_of_function.append(get_func_str)
+                else:
+                    if self.__empty_entry_counter == 0:
+                        mw = ModalWindow(self.parent_window, title='Пустая строка', labeltext='Это пример модального окна, '
+                                                                                            'возникающий, если ты ввел '
+                                                                                            'пустую '
+                                                                                            'строку. С этим ничего '
+                                                                                            'делать не нужно. '
+                                                                                            'Просто нажми OK :)')
+                        ok_button = Button(master=mw.top, text='OK', command=mw.cancel)
+                        mw.add_button(ok_button)
+                        self.__empty_entry_counter = 1
         self.__empty_entry_counter = 0
         figure = self.parent_window.plotter.plot(list_of_function)
         self._state.figure = figure
@@ -203,16 +207,7 @@ class Commands:
         if open_filename != '':
             func_dict = json.load(open(open_filename, "r"))
             list_of_function = func_dict["list_of_function"]
-            figure = self.parent_window.plotter.plot(list_of_function) ## вот тут нужно сделать окно выбора файла и вытащить файлик со списком функций
-            self._state.figure = figure
-            self.__forget_canvas()
-            self.__figure_canvas = FigureCanvasTkAgg(figure, self.parent_window)
-            self.__forget_navigation()
-            self.__navigation_toolbar = NavigationToolbar2Tk(self.__figure_canvas, self.parent_window)
-            self.__figure_canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
-            plot_button = self.parent_window.get_button_by_name('plot')
-            if plot_button:
-                plot_button.pack_forget()
+            Commands.plot(self, list_of_function=list_of_function)
 
 # class for buttons storage (класс для хранения кнопок)
 class Buttons:
