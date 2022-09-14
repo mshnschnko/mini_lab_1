@@ -51,12 +51,6 @@ class Entries:
                 answer = None
                 if len(get_func_str) != 0:
                     answer = mb.askokcancel("Подтверждение удаления", "Вы пытаетесь удалить поле, содержащее информацию")
-                    # mw_del_not_empty = ModalWindow(self.parent_window, title='Удаление непустого поля', labeltext='Вы пытаетесь '
-                    #                                                                                             'удалить поле, '
-                    #                                                                                             'которое содержит '
-                    #                                                                                             'какую-то функцию')
-                    # ok_button = Button(master=mw_del_not_empty.top, text='OK', command=mw_del_not_empty.cancel)
-                    # mw_del_not_empty.add_button(ok_button)
                     if answer:
                         self.__forget_entry__()
                 else:
