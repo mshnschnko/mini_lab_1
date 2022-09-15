@@ -157,7 +157,10 @@ class Commands:
         list_of_function = []
         list_of_function_from_file = kwargs.get('list_of_function')
         if list_of_function_from_file:
-            list_of_function = list_of_function_from_file
+            # list_of_function = list_of_function_from_file
+            for func in list_of_function_from_file:
+                if is_not_blank(func):
+                        list_of_function.append(func)
         if not list_of_function_from_file:
             for entry in self.parent_window.entries.entries_list:
                 get_func_str = entry.get()
@@ -203,7 +206,7 @@ class Commands:
         return self
 
     def open_file(self):
-        open_filename = askopenfilename(title="Выбор файла", filetypes=[("Json", '*.json'), ("All files", "*.*")])
+        open_filename = askopenfilename(title="Выбор файла", filetypes=[("Json", '*.json')])
         if open_filename != '':
             func_dict = json.load(open(open_filename, "r"))
             list_of_function = func_dict["list_of_function"]
