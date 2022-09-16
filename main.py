@@ -206,11 +206,22 @@ class Commands:
         return self
 
     def open_file(self):
+        def is_not_blank(s):
+            return bool(s and not s.isspace())
+
         open_filename = askopenfilename(title="Выбор файла", filetypes=[("Json", '*.json')])
         if open_filename != '':
             func_dict = json.load(open(open_filename, "r"))
             list_of_function = func_dict["list_of_function"]
-            Commands.plot(self, list_of_function=list_of_function)
+            entries_count = len(self.parent_window.entries.entries_list)
+            for func in list_of_function:
+                if is_not_blank(func):
+                    self.add_func()
+            for i in range(len(list_of_function)):
+                if is_not_blank(list_of_function[i]):
+                    self.parent_window.entries.entries_list[entries_count + i].insert(INSERT, list_of_function[i])
+            Commands.plot(self)
+            # Commands.plot(self, list_of_function=list_of_function)
 
 # class for buttons storage (класс для хранения кнопок)
 class Buttons:
