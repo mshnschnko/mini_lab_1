@@ -55,6 +55,10 @@ class Entries:
                         self.__forget_entry__()
                 else:
                     self.__forget_entry__()
+            else:
+                mw = ModalWindow(self.parent_window, title='Не выбрано поле', labeltext='Выберете поле для удаления')
+                ok_button = Button(master=mw.top, text='OK', command=mw.cancel)
+                mw.add_button(ok_button)
         plot_button = self.parent_window.get_button_by_name('plot')
         if plot_button:
             plot_button.pack_forget()
@@ -218,6 +222,7 @@ class Commands:
                 entry.pack_forget()
                 # self.parent_window.entries.entries_list.remove(entry)
             self.parent_window.entries.entries_list.clear()
+            Entries.curr_entry = None
             for func in list_of_function:
                 if is_not_blank(func):
                     self.add_func()
